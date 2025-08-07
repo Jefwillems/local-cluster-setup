@@ -13,7 +13,7 @@ spec:
   source:
     chart: base
     repoURL: https://istio-release.storage.googleapis.com/charts
-    targetRevision: "${ISTIO_VERSION}"
+    targetRevision: "1.26"
   syncPolicy:
     automated:
       prune: true

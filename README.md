@@ -8,6 +8,9 @@ kind create cluster --name local-cluster
 1. Add argocd
 
 ```bash
+kubectl get crd gateways.gateway.networking.k8s.io &> /dev/null || \
+  { kubectl kustomize "github.com/kubernetes-sigs/gateway-api/config/crd?ref=v1.0.0" | kubectl apply -f -; }
+
 kubectl create namespace argocd
 
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
@@ -25,14 +28,5 @@ Optionally create a github app, and connect repo in argocd
 
 kubectl apply -f infra/argocd/apps/applications.yaml
 ```
-
-2. Add Istio
-
-```bash 
-kubectl get crd gateways.gateway.networking.k8s.io &> /dev/null || \
-  { kubectl kustomize "github.com/kubernetes-sigs/gateway-api/config/crd?ref=v1.0.0" | kubectl apply -f -; }
-```
-
-3. Add gitea
 
 

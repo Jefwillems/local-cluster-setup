@@ -13,7 +13,7 @@ spec:
   source:
     chart: cni
     repoURL: https://istio-release.storage.googleapis.com/charts
-    targetRevision: ${ISTIO_VERSION}
+    targetRevision: "1.26"
     helm:
       values: |
         profile: ambient
