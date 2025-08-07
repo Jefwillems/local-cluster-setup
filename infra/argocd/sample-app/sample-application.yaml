@@ -11,7 +11,7 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    path: infra/argocd/sample-app
+    path: infra/argocd/sample-app/guestbook
     repoURL: https://github.com/Jefwillems/local-cluster-setup
     targetRevision: main
   syncPolicy:
