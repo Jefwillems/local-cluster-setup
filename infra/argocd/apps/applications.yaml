@@ -12,7 +12,7 @@ spec:
       repoURL: https://github.com/Jefwillems/local-cluster-setup.git
       revision: HEAD
       directories:
-      - path: argocd/apps/*
+      - path: infra/argocd/apps/*
 
   template:
     metadata:
