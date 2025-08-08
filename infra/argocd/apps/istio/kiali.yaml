@@ -472,10 +472,6 @@ spec:
   parentRefs:
   - name: kiali-gateway
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /kiali
-    backendRefs:
+  - backendRefs:
     - name: kiali
       port: 9090
