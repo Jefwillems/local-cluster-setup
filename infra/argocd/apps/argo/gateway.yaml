@@ -24,10 +24,6 @@ spec:
   parentRefs:
   - name: argocd-gateway
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /argocd
-    backendRefs:
-    - name: argocd-server
-      port: 80
+  - backendRefs:
+      - name: argocd-server
+        port: 80
