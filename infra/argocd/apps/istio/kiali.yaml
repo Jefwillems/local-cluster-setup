@@ -474,4 +474,4 @@ spec:
   rules:
   - backendRefs:
     - name: kiali
-      port: 9090
+      port: 20001
