@@ -35,10 +35,12 @@ kubectl apply -f infra/argocd/repo-creds.yaml
 kubectl apply -f infra/argocd/repositories.yaml
 kubectl apply -f infra/argocd/apps/applications.yaml
 
-kubectl label namespace apps-ns istio.io/dataplane-mode=ambient
+kubectl label namespace default istio.io/dataplane-mode=ambient
 # expose all LoadBalancer objects in the cluster. navigate to them by checking exposed docker ports mapped to port 80
 cloud-provider-kind -enable-lb-port-mapping
 ```
+
+wait until loadbalancer proxy containers are running in docker/podman
 
 ```bash
 # generate some traffic
