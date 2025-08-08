@@ -2,6 +2,7 @@
 
 ```bash
 kind create cluster --name local-cluster
+kubectl label node local-cluster-control-plane node.kubernetes.io/exclude-from-external-load-balancers-
 ```
 
 
@@ -12,6 +13,8 @@ kubectl get crd gateways.gateway.networking.k8s.io &> /dev/null || \
   { kubectl kustomize "github.com/kubernetes-sigs/gateway-api/config/crd?ref=v1.0.0" | kubectl apply -f -; }
 
 helm install sealed-secrets -n kube-system --set-string fullnameOverride=sealed-secrets-controller sealed-secrets/sealed-secrets
+
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.18.2/cert-manager.yaml
 
 kubectl create namespace argocd
 
