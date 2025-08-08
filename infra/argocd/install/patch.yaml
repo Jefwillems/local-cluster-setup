@@ -21,6 +21,7 @@ spec:
        - /argocd
        - --rootpath
        - /argocd
+       - --disable-auth
        name: argocd-server
        env:
        - name: ARGOCD_MAX_CONCURRENT_LOGIN_REQUESTS_COUNT
