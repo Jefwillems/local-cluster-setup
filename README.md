@@ -36,6 +36,10 @@ kubectl apply -f infra/argocd/repo-creds.yaml
 kubectl apply -f infra/argocd/repositories.yaml
 
 kubectl apply -f infra/argocd/apps/applications.yaml
+
+export INGRESS_HOST=$(kubectl get -n argocd gtw argocd-gateway -o jsonpath='{.status.addresses[0].value}')
+export INGRESS_PORT=$(kubectl get -n argocd gtw argocd-gateway -o jsonpath='{.spec.listeners[?(@.name=="http")].port}')
+
 ```
 
 
