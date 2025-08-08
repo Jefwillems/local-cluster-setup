@@ -477,5 +477,5 @@ spec:
         type: PathPrefix
         value: /kiali
     backendRefs:
-    - name: argocd-server
-      port: 80
+    - name: kiali
+      port: 9090
