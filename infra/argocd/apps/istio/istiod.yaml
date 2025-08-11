@@ -19,6 +19,7 @@ spec:
         profile: ambient
         meshConfig:
           enablePrometheusMerge: true
+          enableTracing: true
           defaultConfig:
             tracing: {} # disable legacy MeshConfig tracing options
           extensionProviders:
