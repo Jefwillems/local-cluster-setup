@@ -1,46 +1,47 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-kind create cluster --name crossplane-test
+echo "[1/8] Creating kind cluster..."
+kind create cluster --name local-cluster
+kubectl label node local-cluster-control-plane node.kubernetes.io/exclude-from-external-load-balancers-
 
-CONTEXT="kind-crossplane-test"
+echo "[2/8] Installing Gateway API CRDs if not present..."
+kubectl get crd gateways.gateway.networking.k8s.io &> /dev/null || \
+	{ kubectl kustomize "github.com/kubernetes-sigs/gateway-api/config/crd?ref=v1.0.0" | kubectl apply -f -; }
 
-helm repo add crossplane-stable https://charts.crossplane.io/stable
+echo "[3/8] Installing sealed-secrets..."
+helm install sealed-secrets -n kube-system --set-string fullnameOverride=sealed-secrets-controller sealed-secrets/sealed-secrets
 
-helm repo update
+echo "[4/8] Creating argocd namespace..."
+kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 
-helm install crossplane --namespace crossplane-system --create-namespace crossplane-stable/crossplane
+echo "[5/8] Installing ArgoCD..."
+kubectl apply -k ./infra/argocd/install/ -n argocd --wait=true
 
-kubectl --context $CONTEXT get pods -n crossplane-system
+echo "[6/8] Waiting for ArgoCD pods to be ready..."
+kubectl wait --for=condition=Available --timeout=180s deployment -l app.kubernetes.io/part-of=argocd -n argocd
+kubectl wait --for=condition=Ready --timeout=180s pod -l app.kubernetes.io/name -n argocd
 
-kubectl --context $CONTEXT create namespace argocd
+echo "[7/8] Sealing repo credentials..."
+if [ -f ./infra/argocd/repo-creds-unsafe.yaml ]; then
+	kubeseal -f ./infra/argocd/repo-creds-unsafe.yaml -w ./infra/argocd/repo-creds.yaml
+else
+	echo "WARNING: ./infra/argocd/repo-creds-unsafe.yaml not found. Skipping sealing."
+fi
 
-kubectl --context $CONTEXT apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+echo "[8/8] Bootstrapping ArgoCD app of apps..."
+kubectl apply -f infra/argocd/repo-creds.yaml
+kubectl apply -f infra/argocd/repositories.yaml
+kubectl apply -f infra/argocd/apps/applications.yaml
 
-kubectl --context $CONTEXT wait --for=condition=Available deployment/argocd-server -n argocd --timeout=180s
+echo "Creating and labeling apps-ns namespace for Istio ambient mode..."
+kubectl create namespace apps-ns --dry-run=client -o yaml | kubectl apply -f -
+kubectl label namespace apps-ns istio.io/dataplane-mode=ambient --overwrite
 
-# NOT this: kubectl --context $CONTEXT patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+echo "Waiting for LoadBalancer services to be assigned external IPs..."
+timeout 180 bash -c 'until kubectl get svc --all-namespaces -o json | jq -e ".items[] | select(.spec.type==\"LoadBalancer\") | .status.loadBalancer.ingress[0].ip or .status.loadBalancer.ingress[0].hostname"; do echo waiting for LoadBalancer IPs...; sleep 5; done'
 
-# just run: kubectl port-forward svc/argocd-server -n argocd 8080:443
+echo "Enabling cloud-provider-kind port mapping..."
+cloud-provider-kind -enable-lb-port-mapping
 
-ARGO_INITIAL_PW=$(argocd admin initial-password -n argocd | sed '1! d')
-
-kubectl --context $CONTEXT port-forward svc/argocd-server -n argocd 8080:443 > /dev/null 2>&1 &
-
-sleep 5
-
-argocd login localhost:8080 --insecure --username admin --password $ARGO_INITIAL_PW
-
-ARGO_NEW_PW="superadmin"
-
-argocd account update-password --insecure --current-password $ARGO_INITIAL_PW --new-password $ARGO_NEW_PW
-
-
-echo "You can now open argocd at http://localhost:8080 and login with:
-    username: admin
-    password: $ARGO_NEW_PW
-"
-
-read -p "Press Enter to exit..."
-
-# Cleanup
-pkill 'kubectl'
+echo "Setup complete!"
