@@ -103,7 +103,7 @@ spec:
   - name: jaeger-gateway
   rules:
   - backendRefs:
-    - name: jaeger
+    - name: tracing
       port: 80
 
 ---
