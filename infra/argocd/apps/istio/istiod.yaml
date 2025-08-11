@@ -17,6 +17,15 @@ spec:
     helm:
       values: |
         profile: ambient
+        meshConfig:
+          enablePrometheusMerge: true
+          defaultConfig:
+            tracing: {} # disable legacy MeshConfig tracing options
+          extensionProviders:
+            - name: jaeger
+              opentelemetry:
+                port: 4317
+                service: jaeger-collector.istio-system.svc.cluster.local
   syncPolicy:
     automated:
       prune: true
