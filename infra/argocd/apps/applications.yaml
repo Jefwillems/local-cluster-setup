@@ -8,29 +8,34 @@ spec:
   goTemplateOptions: ["missingkey=error"]
 
   generators:
-  - git:
-      repoURL: https://github.com/Jefwillems/local-cluster-setup.git
-      revision: HEAD
-      directories:
-      - path: infra/argocd/apps/*
-
+    - git:
+        repoURL: https://github.com/Jefwillems/local-cluster-setup.git
+        revision: HEAD
+        directories:
+          - path: infra/argocd/apps/*/values.yaml
+    - list:
+        elementsYaml: "{{ . | toJson }}"
   template:
     metadata:
-      name: '{{.path.basename}}'
+      name: "{{.path.basename}}"
       labels:
-        instance: '{{.path.basename}}'
+        instance: "{{.path.basename}}"
     spec:
       project: "default"
       source:
         repoURL: https://github.com/Jefwillems/local-cluster-setup.git
         targetRevision: HEAD
-        path: '{{.path.path}}'
+        path: "{{.path.path}}"
+        helm:
+          valueFiles:
+            - values.yaml
+          ignoreMissingValueFiles: true
       destination:
         server: https://kubernetes.default.svc
-        namespace: '{{.path.basename}}'
+        namespace: "{{.namespace}}"
       syncPolicy:
         automated:
           prune: true
           selfHeal: true
         syncOptions:
-        - CreateNamespace=true
+          - CreateNamespace=true
