@@ -18,7 +18,8 @@ kubectl create namespace argocd
 
 # curl -kLs -o infra/argocd/install.yaml https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
-kubectl apply -k ./infra/argocd/install/ -n argocd --wait=true
+# kubectl apply -k ./infra/argocd/install/ -n argocd --wait=true
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml --wait=true
 
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 ```

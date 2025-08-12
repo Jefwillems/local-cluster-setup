@@ -16,7 +16,8 @@ echo "[4/8] Creating argocd namespace..."
 kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 
 echo "[5/8] Installing ArgoCD..."
-kubectl apply -k ./infra/argocd/install/ -n argocd --wait=true
+# kubectl apply -k ./infra/argocd/install/ -n argocd --wait=true
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml --wait=true
 
 echo "[6/8] Waiting for ArgoCD pods to be ready..."
 kubectl wait --for=condition=Available --timeout=180s deployment -l app.kubernetes.io/part-of=argocd -n argocd
