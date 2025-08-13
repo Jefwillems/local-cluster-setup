@@ -48,7 +48,7 @@ echo "[8/8] Bootstrapping ArgoCD app of apps..."
 kubectl apply -f infra/argocd/repo-creds.yaml
 kubectl apply -f infra/argocd/repositories.yaml
 kubectl apply -f infra/argocd/applications.yaml
-
+kubectl apply -f infra/argocd/infra.yaml
 
 
 echo "Waiting for LoadBalancer services to be assigned external IPs..."

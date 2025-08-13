@@ -35,3 +35,7 @@ applications:
                 ADAPTER: memory
               queue:
                 TYPE: level
+            admin:
+              username: "admin"
+              password: "admin123"
+              email: "gi@tea.com"
