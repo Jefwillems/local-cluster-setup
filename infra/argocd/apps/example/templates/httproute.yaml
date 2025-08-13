@@ -1,0 +1,15 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+	name: {{ template "helm-guestbook.name" . }}-route
+spec:
+	parentRefs:
+		- name: {{ template "helm-guestbook.name" . }}-gateway
+	rules:
+		- matches:
+				- path:
+						type: PathPrefix
+						value: "/"
+			backendRefs:
+				- name: {{ template "helm-guestbook.name" . }}
+					port: {{ .Values.containerPort }}
