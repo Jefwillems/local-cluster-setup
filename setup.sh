@@ -30,11 +30,11 @@ else
 	echo "WARNING: ./infra/argocd/repo-creds-unsafe.yaml not found. Skipping sealing."
 fi
 
-echo "Creating and labeling apps-ns namespace for Istio ambient mode..."
-kubectl create namespace apps-ns --dry-run=client -o yaml | kubectl apply -f -
-kubectl label namespace apps-ns istio.io/dataplane-mode=ambient --overwrite
+# echo "Creating and labeling apps-ns namespace for Istio ambient mode..."
+# kubectl create namespace apps-ns --dry-run=client -o yaml | kubectl apply -f -
+# kubectl label namespace apps-ns istio.io/dataplane-mode=ambient --overwrite
 
-kubectl create namespace istio-system --dry-run=client -o yaml | kubectl apply -f -
+# kubectl create namespace istio-system --dry-run=client -o yaml | kubectl apply -f -
 
 echo "[8/8] Bootstrapping ArgoCD app of apps..."
 kubectl apply -f infra/argocd/repo-creds.yaml
@@ -44,9 +44,9 @@ kubectl apply -f infra/argocd/apps/applications.yaml
 
 
 echo "Waiting for LoadBalancer services to be assigned external IPs..."
-timeout 180 bash -c 'until kubectl get svc --all-namespaces -o json | jq -e ".items[] | select(.spec.type==\"LoadBalancer\") | .status.loadBalancer.ingress[0].ip or .status.loadBalancer.ingress[0].hostname"; do echo waiting for LoadBalancer IPs...; sleep 5; done'
+# timeout 180 bash -c 'until kubectl get svc --all-namespaces -o json | jq -e ".items[] | select(.spec.type==\"LoadBalancer\") | .status.loadBalancer.ingress[0].ip or .status.loadBalancer.ingress[0].hostname"; do echo waiting for LoadBalancer IPs...; sleep 5; done'
 
 echo "Enabling cloud-provider-kind port mapping..."
-cloud-provider-kind -enable-lb-port-mapping
+# cloud-provider-kind -enable-lb-port-mapping
 
 echo "Setup complete!"

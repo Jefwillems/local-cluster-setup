@@ -32,7 +32,7 @@ spec:
           ignoreMissingValueFiles: true
       destination:
         server: https://kubernetes.default.svc
-        namespace: "{{.namespace}}"
+        namespace: "{{.path.basename}}"
       syncPolicy:
         automated:
           prune: true
