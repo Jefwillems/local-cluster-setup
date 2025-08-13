@@ -4,8 +4,6 @@
 
 replicaCount: 1
 
-namespace: "example-ns"
-
 image:
   repository: gcr.io/google-samples/gb-frontend
   tag: v5

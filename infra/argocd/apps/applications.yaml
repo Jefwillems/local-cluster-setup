@@ -13,8 +13,6 @@ spec:
         revision: HEAD
         directories:
           - path: infra/argocd/apps/*
-    - list:
-        elementsYaml: "{{ . | toJson }}"
   template:
     metadata:
       name: "{{.path.basename}}"
