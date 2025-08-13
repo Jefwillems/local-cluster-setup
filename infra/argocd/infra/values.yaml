@@ -39,3 +39,43 @@ applications:
               username: "admin"
               password: "admin123"
               email: "gi@tea.com"
+  - name: istio-base
+    namespace: istio-system
+    source:
+      chart: base
+      repoURL: https://istio-release.storage.googleapis.com/charts
+      targetRevision: "1.26"
+  - name: istio-cni
+    namespace: istio-system
+    source:
+      chart: cni
+      repoURL: https://istio-release.storage.googleapis.com/charts
+      targetRevision: "1.26"
+      helm:
+        valuesObject:
+          profile: ambient
+  - name: istiod
+    namespace: istio-system
+    source:
+      chart: istiod
+      repoURL: https://istio-release.storage.googleapis.com/charts
+      targetRevision: "1.26"
+      helm:
+        valuesObject:
+          profile: ambient
+          meshConfig:
+            enablePrometheusMerge: true
+            enableTracing: true
+            defaultConfig:
+              tracing: {} # disable legacy MeshConfig tracing options
+            extensionProviders:
+              - name: jaeger
+                opentelemetry:
+                  port: 4317
+                  service: jaeger-collector.istio-system.svc.cluster.local
+  - name: ztunnel
+    namespace: istio-system
+    source:
+      chart: ztunnel
+      repoURL: https://istio-release.storage.googleapis.com/charts
+      targetRevision: "1.26"
