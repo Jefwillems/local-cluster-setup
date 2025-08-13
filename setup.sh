@@ -23,6 +23,14 @@ echo "[6/8] Waiting for ArgoCD pods to be ready..."
 kubectl wait --for=condition=Available --timeout=180s deployment -l app.kubernetes.io/part-of=argocd -n argocd
 kubectl wait --for=condition=Ready --timeout=180s pod -l app.kubernetes.io/name -n argocd
 
+kubectl -n argocd patch secret argocd-secret \
+  -p '{"stringData": {
+    "admin.password": "$2a$12$XBVWOw4ob/xRu/taWesu2Oni9OebnoFjKUo4ReaNTBZtr4BL..ybO",
+    "admin.passwordMtime": "'$(date +%FT%T%Z)'"
+  }}'
+
+
+
 echo "[7/8] Sealing repo credentials..."
 if [ -f ./infra/argocd/repo-creds-unsafe.yaml ]; then
 	kubeseal -f ./infra/argocd/repo-creds-unsafe.yaml -w ./infra/argocd/repo-creds.yaml
@@ -39,7 +47,7 @@ fi
 echo "[8/8] Bootstrapping ArgoCD app of apps..."
 kubectl apply -f infra/argocd/repo-creds.yaml
 kubectl apply -f infra/argocd/repositories.yaml
-kubectl apply -f infra/argocd/apps/applications.yaml
+kubectl apply -f infra/argocd/applications.yaml
 
 
 
