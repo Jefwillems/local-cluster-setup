@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: infra-charts
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/Jefwillems/local-cluster-setup.git
+        revision: HEAD
+        directories:
+          - path: infra/argocd/*
+  template:
+    metadata:
+      name: '{{path.basename}}-infra'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/Jefwillems/local-cluster-setup.git
+        targetRevision: HEAD
+        path: 'infra/argocd/{{path.basename}}'
+        helm:
+          valueFiles:
+            - values.yaml
+          ignoreMissingValueFiles: true
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{path.basename}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+        hooks:
+        - type: PostSync
+          command: ["helm"]
+          args: ["dependency", "update"]
