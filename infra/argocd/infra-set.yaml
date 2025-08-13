@@ -8,8 +8,10 @@ spec:
     - git:
         repoURL: https://github.com/Jefwillems/local-cluster-setup.git
         revision: HEAD
-        directories:
-          - path: infra/argocd/infra/*
+        files:
+          - path: infra/argocd/infra/*/values.yaml
+    - list:
+        elementsYaml: "{{ .additionalConfig | toJson }}"
   template:
     metadata:
       name: '{{path.basename}}'
@@ -32,3 +34,4 @@ spec:
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
+      ignoreDifferences: '{{ .ignoreDifferences | toJson }}'
