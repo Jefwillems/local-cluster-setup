@@ -4,6 +4,8 @@ metadata:
   name: infra-charts
   namespace: argocd
 spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
   generators:
     - git:
         repoURL: https://github.com/Jefwillems/local-cluster-setup.git
@@ -14,24 +16,38 @@ spec:
         elementsYaml: "{{ .additionalConfig | toJson }}"
   template:
     metadata:
-      name: '{{path.basename}}'
+      name: '{{.path.basename}}'
     spec:
       project: default
       source:
         repoURL: https://github.com/Jefwillems/local-cluster-setup.git
         targetRevision: HEAD
-        path: 'infra/argocd/infra/{{path.basename}}'
+        path: 'infra/argocd/infra/{{.path.basename}}'
         helm:
           valueFiles:
             - values.yaml
           ignoreMissingValueFiles: true
       destination:
         server: https://kubernetes.default.svc
-        namespace: '{{path.basename}}'
+        namespace: '{{.path.basename}}'
       syncPolicy:
         automated:
           prune: true
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
-      ignoreDifferences: '{{ .ignoreDifferences | toJson }}'
+  templatePatch: |
+    spec:
+    {{- if .ignoreWebhookValidation }}
+      ignoreDifferences:
+        - group: admissionregistration.k8s.io
+          kind: ValidatingWebhookConfiguration
+          name: istio-validator-istio-system
+          jsonPointers:
+            - /webhooks/0/failurePolicy
+        - group: admissionregistration.k8s.io
+          kind: ValidatingWebhookConfiguration
+          name: istiod-default-validator
+          jsonPointers:
+            - /webhooks/0/failurePolicy
+    {{- end }}
