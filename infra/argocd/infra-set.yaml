@@ -10,10 +10,8 @@ spec:
     - git:
         repoURL: https://github.com/Jefwillems/local-cluster-setup.git
         revision: HEAD
-        files:
-          - path: infra/argocd/infra/*/values.yaml
-    - list:
-        elementsYaml: "{{ .additionalConfig | toJson }}"
+        directories:
+          - path: infra/argocd/infra/*
   template:
     metadata:
       name: '{{.path.basename}}'
@@ -37,8 +35,8 @@ spec:
         syncOptions:
           - CreateNamespace=true
   templatePatch: |
+    {{- if eq .path.basename "istio-system" }}
     spec:
-    {{- if .ignoreWebhookValidation }}
       ignoreDifferences:
         - group: admissionregistration.k8s.io
           kind: ValidatingWebhookConfiguration
