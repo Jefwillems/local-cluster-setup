@@ -1,0 +1,7 @@
+name: argocd
+argo-cd:
+  configs:
+    params:
+      server.insecure: true
+    secret:
+      argocdServerAdminPassword: $2a$10$kiLnonDN6H1P3I/bk2L81ueVUaOhNip5eHrUqwvoGlNydiApwI1WW

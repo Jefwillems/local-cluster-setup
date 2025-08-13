@@ -1,3 +1,5 @@
+name: gitea
+
 upstream:
   valkey-cluster:
     enabled: false
