@@ -9,16 +9,16 @@ spec:
         repoURL: https://github.com/Jefwillems/local-cluster-setup.git
         revision: HEAD
         directories:
-          - path: infra/argocd/*
+          - path: infra/argocd/infra/*
   template:
     metadata:
-      name: '{{path.basename}}-infra'
+      name: '{{path.basename}}'
     spec:
       project: default
       source:
         repoURL: https://github.com/Jefwillems/local-cluster-setup.git
         targetRevision: HEAD
-        path: 'infra/argocd/{{path.basename}}'
+        path: 'infra/argocd/infra/{{path.basename}}'
         helm:
           valueFiles:
             - values.yaml
