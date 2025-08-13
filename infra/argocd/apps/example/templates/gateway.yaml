@@ -11,4 +11,4 @@ spec:
       port: {{ .Values.containerPort }}
       allowedRoutes:
         namespaces:
-          from: SameNamespace
+          from: Same
