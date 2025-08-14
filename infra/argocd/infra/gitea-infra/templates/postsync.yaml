@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: gitea-create-repo-
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+spec:
+  template:
+    spec:
+      containers:
+        - name: create-repo
+          image: curlimages/curl:8.7.1
+          env:
+            - name: GITEA_URL
+              value: "gitea-infra-upstream-http.gitea-infra.svc.cluster.local:3000"
+            - name: GITEA_TOKEN
+              value: "admin:admin123"
+            - name: REPO_NAME
+              value: "test"
+            - name: REPO_OWNER
+              value: "admin"
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              curl -X POST "$GITEA_URL/api/v1/org/$REPO_OWNER/repos" \
+                -H "Content-Type: application/json" \
+                -u "$GITEA_TOKEN" \
+                -d "{\"name\": \"$REPO_NAME\", \"private\": false}" \
+                || [ $? -eq 22 ] && echo "Repo already exists (409), continuing..." && exit 0
+      restartPolicy: OnFailure

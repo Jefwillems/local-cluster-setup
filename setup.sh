@@ -1,52 +1,74 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "[1/8] Creating kind cluster..."
+
+REQUIRED_TOOLS=(kind kubectl helm kubeseal cloud-provider-kind)
+MISSING_TOOLS=()
+
+# Check for required tools
+for tool in "${REQUIRED_TOOLS[@]}"; do
+	if ! command -v "$tool" &>/dev/null; then
+		MISSING_TOOLS+=("$tool")
+	fi
+done
+
+if [ ${#MISSING_TOOLS[@]} -ne 0 ]; then
+	echo -e "\033[1;31m[ERROR] The following required tools are missing:\033[0m"
+	for tool in "${MISSING_TOOLS[@]}"; do
+		echo "  - $tool"
+	done
+	echo -e "\033[1;33mPlease install the missing tools and re-run this script.\033[0m"
+	exit 1
+fi
+
+# Check for required helm chart repositories
+REQUIRED_HELM_REPOS=("sealed-secrets")
+MISSING_HELM_REPOS=()
+for repo in "${REQUIRED_HELM_REPOS[@]}"; do
+	if ! helm repo list | awk '{print $1}' | grep -q "^$repo$"; then
+		MISSING_HELM_REPOS+=("$repo")
+	fi
+done
+
+if [ ${#MISSING_HELM_REPOS[@]} -ne 0 ]; then
+	echo -e "\033[1;31m[ERROR] The following required Helm repositories are missing:\033[0m"
+	for repo in "${MISSING_HELM_REPOS[@]}"; do
+		if [ "$repo" = "sealed-secrets" ]; then
+			echo "  - sealed-secrets (add with: helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets)"
+		else
+			echo "  - $repo"
+		fi
+	done
+	echo -e "\033[1;33mPlease add the missing Helm repositories and re-run this script.\033[0m"
+	exit 1
+fi
+
+echo -e "\033[1;34m[INFO][1/8] Creating kind cluster...\033[0m"
 kind create cluster --name local-cluster
 kubectl label node local-cluster-control-plane node.kubernetes.io/exclude-from-external-load-balancers-
 
-echo "[2/8] Installing Gateway API CRDs if not present..."
+echo -e "\033[1;34m[INFO][2/8] Installing Gateway API CRDs if not present...\033[0m"
 kubectl get crd gateways.gateway.networking.k8s.io &> /dev/null || \
 	{ kubectl kustomize "github.com/kubernetes-sigs/gateway-api/config/crd?ref=v1.0.0" | kubectl apply -f -; }
 
-echo "[3/8] Installing sealed-secrets..."
+echo -e "\033[1;34m[INFO][3/8] Installing sealed-secrets...\033[0m"
 helm install sealed-secrets -n kube-system --set-string fullnameOverride=sealed-secrets-controller sealed-secrets/sealed-secrets
 
-echo "[3.5/8] Waiting for sealed-secrets controller to be ready..."
+echo -e "\033[1;34m[INFO][3.5/8] Waiting for sealed-secrets deployment and pods to be ready...\033[0m"
 kubectl wait --for=condition=Available --timeout=120s deployment/sealed-secrets-controller -n kube-system
 kubectl wait --for=condition=Ready --timeout=120s pod -l app.kubernetes.io/name=sealed-secrets -n kube-system
 
-echo "[4/8] Creating argocd namespace..."
+echo -e "\033[1;34m[INFO][4/8] Creating argocd namespace...\033[0m"
 kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 
-# echo "[5/8] Installing ArgoCD..."
-# # kubectl apply -k ./infra/argocd/install/ -n argocd --wait=true
-# kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml --wait=true
-
-# echo "[6/8] Waiting for ArgoCD pods to be ready..."
-# kubectl wait --for=condition=Available --timeout=180s deployment -l app.kubernetes.io/part-of=argocd -n argocd
-# kubectl wait --for=condition=Ready --timeout=180s pod -l app.kubernetes.io/name -n argocd
-
-# kubectl -n argocd patch secret argocd-secret \
-#   -p '{"stringData": {
-#     "admin.password": "$2a$12$XBVWOw4ob/xRu/taWesu2Oni9OebnoFjKUo4ReaNTBZtr4BL..ybO",
-#     "admin.passwordMtime": "'$(date +%FT%T%Z)'"
-#   }}'
-
-echo "[7/8] Sealing repo credentials..."
+echo -e "\033[1;34m[INFO][7/8] Sealing repo credentials...\033[0m"
 if [ -f ./infra/argocd/repo-creds-unsafe.yaml ]; then
 	kubeseal -f ./infra/argocd/repo-creds-unsafe.yaml -w ./infra/argocd/repo-creds.yaml
 else
-	echo "WARNING: ./infra/argocd/repo-creds-unsafe.yaml not found. Skipping sealing."
+	echo -e "\033[1;33m[WARN] ./infra/argocd/repo-creds-unsafe.yaml not found. Skipping sealing.\033[0m"
 fi
 
-# echo "Creating and labeling apps-ns namespace for Istio ambient mode..."
-# kubectl create namespace apps-ns --dry-run=client -o yaml | kubectl apply -f -
-# kubectl label namespace apps-ns istio.io/dataplane-mode=ambient --overwrite
-
-# kubectl create namespace istio-system --dry-run=client -o yaml | kubectl apply -f -
-
-echo "[8/8] Bootstrapping ArgoCD app of apps..."
+echo -e "\033[1;34m[INFO][8/8] Bootstrapping ArgoCD app of apps...\033[0m"
 
 helm upgrade --install argocd ./infra/argocd/install --namespace argocd --values ./infra/argocd/install/values.yaml
 kubectl apply -f infra/argocd/repo-creds.yaml
@@ -54,10 +76,7 @@ kubectl apply -f infra/argocd/repositories.yaml
 kubectl apply -f infra/argocd/applications.yaml
 kubectl apply -f infra/argocd/infra-set.yaml
 
-echo "Waiting for LoadBalancer services to be assigned external IPs..."
-# timeout 180 bash -c 'until kubectl get svc --all-namespaces -o json | jq -e ".items[] | select(.spec.type==\"LoadBalancer\") | .status.loadBalancer.ingress[0].ip or .status.loadBalancer.ingress[0].hostname"; do echo waiting for LoadBalancer IPs...; sleep 5; done'
+echo -e "\033[1;34m[INFO] Running cloud-provider-kind with lb port mapping enabled...\033[0m"
+cloud-provider-kind -enable-lb-port-mapping
 
-echo "Enabling cloud-provider-kind port mapping..."
-# cloud-provider-kind -enable-lb-port-mapping
-
-echo "Setup complete!"
+echo -e "\033[1;32m[SUCCESS] Setup complete!\033[0m"
