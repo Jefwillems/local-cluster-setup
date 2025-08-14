@@ -17,12 +17,10 @@ spec:
               value: "admin:admin123"
             - name: REPO_NAME
               value: "test"
-            - name: REPO_OWNER
-              value: "admin"
           command: ["/bin/sh", "-c"]
           args:
             - |
-              curl -X POST "$GITEA_URL/api/v1/org/$REPO_OWNER/repos" \
+              curl -X POST "$GITEA_URL/api/v1/user/repos" \
                 -H "Content-Type: application/json" \
                 -u "$GITEA_TOKEN" \
                 -d "{\"name\": \"$REPO_NAME\", \"private\": false}" \
