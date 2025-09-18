@@ -10,12 +10,13 @@ spec:
     spec:
       containers:
         - name: create-repo
-          image: curlimages/curl:8.7.1
+          image: docker.io/jefwillems/alpine-git-curl:latest
+          imagePullPolicy: IfNotPresent
           env:
             - name: GITEA_URL
               value: "gitea-infra-upstream-http.gitea-infra.svc.cluster.local:3000"
             - name: GITEA_TOKEN
-              value: "admin:admin123"
+              value: "admin:admin123" # Replace with a secure token in production
             - name: REPO_NAME
               value: "test"
           command: ["/bin/sh", "-c"]
@@ -24,6 +25,21 @@ spec:
               curl -X POST "$GITEA_URL/api/v1/user/repos" \
                 -H "Content-Type: application/json" \
                 -u "$GITEA_TOKEN" \
-                -d "{\"name\": \"$REPO_NAME\", \"private\": false}" \
-                || [ $? -eq 22 ] && echo "Repo already exists (409), continuing..." && exit 0
+                -d "{\"name\": \"$REPO_NAME\", \"private\": false, \"default_branch\": \"main\"}" \
+                || [ $? -eq 22 ] && echo "Repo already exists (409), continuing..."
+
+              git config --global user.name "admin"
+              git config --global user.email "admin@example.com"
+
+              git clone https://github.com/Jefwillems/local-cluster-setup.git
+
+              git clone "http://$GITEA_TOKEN@$GITEA_URL/admin/$REPO_NAME.git"
+              cd $REPO_NAME
+
+              cp -r ../local-cluster-setup/infra/argocd/* .
+
+              git add .
+              git commit -m "initial commit"
+              git push origin main
+
       restartPolicy: OnFailure

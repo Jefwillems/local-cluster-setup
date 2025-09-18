@@ -71,10 +71,8 @@ fi
 echo -e "\033[1;34m[INFO][8/8] Bootstrapping ArgoCD app of apps...\033[0m"
 
 helm upgrade --install argocd ./infra/argocd/install --namespace argocd --values ./infra/argocd/install/values.yaml
-kubectl apply -f infra/argocd/repo-creds.yaml
 kubectl apply -f infra/argocd/repositories.yaml
-kubectl apply -f infra/argocd/applications.yaml
-kubectl apply -f infra/argocd/infra-set.yaml
+kubectl apply -f infra/argocd/app-of-infras.yaml
 
 echo -e "\033[1;34m[INFO] Running cloud-provider-kind with lb port mapping enabled...\033[0m"
 cloud-provider-kind -enable-lb-port-mapping

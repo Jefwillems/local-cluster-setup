@@ -1,11 +1,13 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: private-repo
+  name: gitea-repo
   namespace: argocd
   labels:
     argocd.argoproj.io/secret-type: repository
 stringData:
-  url: https://github.com/Jefwillems/local-cluster-setup.git
-  name: cluster setup repo
+  url: https://gitea-infra-upstream-http.gitea-infra.svc.cluster.local:3000/admin/test.git
+  name: gitea-repo
   project: default
+  username: admin
+  password: admin123

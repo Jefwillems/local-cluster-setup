@@ -26,4 +26,4 @@ upstream:
     admin:
       username: "admin"
       password: "admin123"
-      email: "gi@tea.com"
+      email: "admin@example.com"
