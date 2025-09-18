@@ -6,7 +6,7 @@ metadata:
   labels:
     argocd.argoproj.io/secret-type: repository
 stringData:
-  url: https://gitea-infra-upstream-http.gitea-infra.svc.cluster.local:3000/admin/test.git
+  url: http://gitea-infra-upstream-http.gitea-infra.svc.cluster.local:3000/admin/test.git
   name: gitea-repo
   project: default
   username: admin

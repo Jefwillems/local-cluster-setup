@@ -9,7 +9,7 @@ spec:
 
   generators:
     - git:
-        repoURL: https://gitea-infra-upstream-http.gitea-infra.svc.cluster.local:3000/admin/test.git
+        repoURL: http://gitea-infra-upstream-http.gitea-infra.svc.cluster.local:3000/admin/test.git
         revision: HEAD
         directories:
           - path: apps/*
@@ -21,7 +21,7 @@ spec:
     spec:
       project: "default"
       source:
-        repoURL: https://gitea-infra-upstream-http.gitea-infra.svc.cluster.local:3000/admin/test.git
+        repoURL: http://gitea-infra-upstream-http.gitea-infra.svc.cluster.local:3000/admin/test.git
         targetRevision: HEAD
         path: "{{.path.path}}"
         helm:
