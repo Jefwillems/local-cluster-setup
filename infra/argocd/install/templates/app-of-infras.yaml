@@ -14,20 +14,20 @@ spec:
           - path: infra/argocd/infra/*
   template:
     metadata:
-      name: '{{.path.basename}}'
+      name: "{{ "{{" }}.path.basename{{ "}}" }}"
     spec:
       project: default
       source:
         repoURL: https://github.com/Jefwillems/local-cluster-setup.git
         targetRevision: HEAD
-        path: 'infra/argocd/infra/{{.path.basename}}'
+        path: "infra/argocd/infra/{{ "{{" }}.path.basename{{ "}}" }}"
         helm:
           valueFiles:
             - values.yaml
           ignoreMissingValueFiles: true
       destination:
         server: https://kubernetes.default.svc
-        namespace: '{{.path.basename}}'
+        namespace: "{{ "{{" }}.path.basename{{ "}}" }}"
       syncPolicy:
         automated:
           prune: true
@@ -35,7 +35,7 @@ spec:
         syncOptions:
           - CreateNamespace=true
   templatePatch: |
-    {{- if eq .path.basename "istio-system" }}
+    {{ "{{" }}- if eq .path.basename "istio-system" {{ "}}" }}
     spec:
       ignoreDifferences:
         - group: admissionregistration.k8s.io
@@ -48,4 +48,4 @@ spec:
           name: istiod-default-validator
           jsonPointers:
             - /webhooks/0/failurePolicy
-    {{- end }}
+    {{ "{{" }}- end {{ "}}" }}
