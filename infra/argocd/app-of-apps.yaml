@@ -9,10 +9,10 @@ spec:
 
   generators:
     - git:
-        repoURL: https://github.com/Jefwillems/local-cluster-setup.git
+        repoURL: https://gitea-infra-upstream-http.gitea-infra.svc.cluster.local:3000/admin/test.git
         revision: HEAD
         directories:
-          - path: infra/argocd/apps/*
+          - path: apps/*
   template:
     metadata:
       name: "{{.path.basename}}"
@@ -21,7 +21,7 @@ spec:
     spec:
       project: "default"
       source:
-        repoURL: https://github.com/Jefwillems/local-cluster-setup.git
+        repoURL: https://gitea-infra-upstream-http.gitea-infra.svc.cluster.local:3000/admin/test.git
         targetRevision: HEAD
         path: "{{.path.path}}"
         helm:
