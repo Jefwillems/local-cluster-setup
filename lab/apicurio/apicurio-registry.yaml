@@ -1,0 +1,15 @@
+apiVersion: registry.apicur.io/v1
+kind: ApicurioRegistry3
+metadata:
+  name: simple
+spec:
+  app:
+    replicas: 1
+    ingress:
+      enabled: false
+  ui:
+    replicas: 1
+    enabled: true
+    ingress:
+      enabled: false
+
